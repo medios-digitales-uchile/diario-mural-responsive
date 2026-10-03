@@ -14,37 +14,48 @@ im = Image.open(carpeta / 'original.png').convert('RGB')
 W = im.width
 U = 'https://uchile.cl/'
 
-# (y0, y1, recortar_al_contenido, [(x0, x1, enlace, alt)])
+# Zonas verticales del PNG: encabezado azul a sangre (la palabra UNIVERSITARIO baja
+# hasta y 143), cuerpo con marco gris de 3 px a cada lado y pie azul a sangre.
+Y_CUERPO, Y_PIE = 144, 2466
+MARCO = 3
+# El marco empieza en y 126, dentro del encabezado: se blanquea ahí para que no
+# quede como imagen (en móvil no lleva marco).
+for y in range(126, Y_CUERPO):
+    for x in list(range(MARCO)) + list(range(W - MARCO, W)):
+        im.putpixel((x, y), (255, 255, 255))
+
+# (y0, y1, modo, [(x0, x1, enlace, alt)])
+# modo: 'sangre' = ancho completo sin marco; 'recorte' = cada bloque se recorta a su
+# contenido y los márgenes pasan a huecos; 'banda' = sin recorte pero sin el marco.
 filas = [
- (0, 166, False, [(0, 1000, None, 'Diario Mural Universitario. Boletín informativo N° 41, septiembre 2026')]),
- (166, 614, True, [(0, 353, U+'u244644', 'U+GESTIÓN: U. de Chile fortalece gestión financiera institucional con nuevo Módulo de Transferencias en SAP'),
+ (0, Y_CUERPO, 'sangre', [(0, 1000, None, 'Diario Mural Universitario. Boletín informativo N° 41, septiembre 2026')]),
+ (Y_CUERPO, 614, 'recorte', [(0, 353, U+'u244644', 'U+GESTIÓN: U. de Chile fortalece gestión financiera institucional con nuevo Módulo de Transferencias en SAP'),
                    (353, 683, None, 'CSAI: Nuevas/os integrantes académicas/os de la CSAI'),
                    (683, 1000, U+'u243664', 'SISIB: U. de Chile evaluó 67 revistas científicas de universidades estatales')]),
- (614, 941, True, [(0, 450, 'https://lnkd.in/p/d-UqZe4m', 'Dpto. de Pregrado: Nuevo grupo de estudiantes se une al equipo de acompañamiento par de la U. de Chile'),
+ (614, 941, 'recorte', [(0, 450, 'https://lnkd.in/p/d-UqZe4m', 'Dpto. de Pregrado: Nuevo grupo de estudiantes se une al equipo de acompañamiento par de la U. de Chile'),
                    (450, 1000, U+'u244250', 'DIRBDE: Proyecto Redes reunió a estudiantes en torno a la sustentabilidad')]),
- (941, 1357, False, [(0, 645, U+'u243621', 'Estrategias metodológicas para el aprendizaje activo. Pueden descargar la guía aquí'),
+ (941, 1357, 'banda', [(0, 645, U+'u243621', 'Estrategias metodológicas para el aprendizaje activo. Pueden descargar la guía aquí'),
                      (645, 1000, U+'u243621', 'Portada de la guía Estrategias Metodológicas para el Aprendizaje Activo')]),
- (1357, 1715, True, [(0, 497, 'https://www.universitaria.cl/product/entrevista-con-ricardo-ffrench-davis-el-otro-economista-de-chicago/', 'Editorial Universitaria: Nuevo libro Entrevista con Ricardo Ffrench-Davis. El otro economista de Chicago'),
+ (1357, 1715, 'recorte', [(0, 497, 'https://www.universitaria.cl/product/entrevista-con-ricardo-ffrench-davis-el-otro-economista-de-chicago/', 'Editorial Universitaria: Nuevo libro Entrevista con Ricardo Ffrench-Davis. El otro economista de Chicago'),
                      (497, 1000, 'https://www.youtube.com/playlist?list=PLB4eJlYOs9qc', 'Sustentabilidad UChile: ¿Cómo llegamos hasta aquí?: UChileTV estrena serie sobre los desafíos de la sustentabilidad')]),
- (1715, 2048, True, [(0, 590, U+'u244761', 'Senado Universitario elige Mesa Directiva para el período 2026-2027'),
+ (1715, 2064, 'recorte', [(0, 590, U+'u244761', 'Senado Universitario elige Mesa Directiva para el período 2026-2027'),
                      (590, 1000, 'mailto:diariomural@uchile.cl', '¿Tienes una iniciativa, hito, o proyecto que te gustaría compartir con la comunidad UCHILE? Escríbenos a diariomural@uchile.cl')]),
- (2048, 2451, True, [(0, 478, U+'u244498', 'Deporte Azul: FEN se corona campeona de los Juegos Olímpicos Estudiantiles 2026'),
+ (2064, Y_PIE, 'recorte', [(0, 478, U+'u244498', 'Deporte Azul: FEN se corona campeona de los Juegos Olímpicos Estudiantiles 2026'),
                      (478, 1000, U+'u244203', 'Casa de Bello aprueba su nuevo Plan de Desarrollo Institucional y define su rumbo para la próxima década')]),
 ]
+
+# Fondo blanco explícito solo en el boletín, para que en modo oscuro no se oscurezcan márgenes y huecos.
+# El degradado evita que Gmail lo invierta.
+BG = 'background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);'
+AZUL = '#004b93'
 
 def guardar(box, nombre):
     im.crop(box).quantize(256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(carpeta / nombre, optimize=True)
     return nombre
 
-# Las filas de noticias llevan un marco gris de 2 px a cada lado; se dibuja con border
-MARCO = 2
-
-# Fondo blanco explícito solo en el boletín, para que en modo oscuro no se oscurezcan márgenes y huecos.
-# El degradado evita que Gmail lo invierta.
-BG = 'background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);'
 
 def ancho_contenido(x0, x1, y0, y1):
-    x0, x1 = max(x0, MARCO + 1), min(x1, W - MARCO - 1)
+    x0, x1 = max(x0, MARCO), min(x1, W - MARCO)
     caja = ImageChops.difference(im.crop((x0, y0, x1, y1)), Image.new('RGB', (x1-x0, y1-y0), 'white')).point(lambda v: 255 if v > 12 else 0).getbbox()
     return x0 + caja[0], x0 + caja[2]
 
@@ -59,24 +70,30 @@ def celda(w, contenido, clase, total=W):
 def hueco(w, total):
     return celda(w, '', 'gap', total) if w > 0 else ''
 
-out = []
-for i, (y0, y1, recortar, cols) in enumerate(filas):
+cuerpo, cabeza = [], []
+for i, (y0, y1, modo, cols) in enumerate(filas):
     partes = []
-    total = W - 2 * MARCO if recortar else W
-    x = MARCO if recortar else 0
+    if modo == 'sangre':
+        lim0, lim1 = 0, W
+    else:
+        lim0, lim1 = MARCO, W - MARCO
+    total, x = lim1 - lim0, lim0
     for j, (cx0, cx1, enlace, alt) in enumerate(cols):
-        a, b = ancho_contenido(cx0, cx1, y0, y1) if recortar else (cx0, cx1)
+        cx0, cx1 = max(cx0, lim0), min(cx1, lim1)
+        a, b = ancho_contenido(cx0, cx1, y0, y1) if modo == 'recorte' else (cx0, cx1)
         partes.append(hueco(a - x, total))
         n = guardar((a, y0, b, y1), f'b{i}{j}.png')
-        partes.append(celda(b - a, img(n, b - a, alt, enlace), 'col' if len(cols) > 1 else '', total))
+        clase = '' if len(cols) == 1 else ('col' if modo == 'recorte' else 'banda')
+        partes.append(celda(b - a, img(n, b - a, alt, enlace), clase, total))
         x = b
-    partes.append(hueco(W - (MARCO if recortar else 0) - x, total))
-    marco = f'border-left:{MARCO}px solid #dddddc;border-right:{MARCO}px solid #dddddc;' if recortar else ''
-    out.append(f'<div style="font-size:0;line-height:0;{marco}{BG}">' + ''.join(partes) + '</div>')
+    partes.append(hueco(lim1 - x, total))
+    fila = '<div style="font-size:0;line-height:0;">' + ''.join(partes) + '</div>'
+    (cabeza if modo == 'sangre' else cuerpo).append(fila)
+out = cabeza + ['<div class="marco">'] + cuerpo + ['</div>']
 
 # Pie: firma a la izquierda, redes a la derecha con un enlace por icono
-guardar((0, 2451, 660, 2563), 'f0.png')
-guardar((660, 2451, 1000, 2495), 'f1.png')
+guardar((0, Y_PIE, 660, 2563), 'f0.png')
+guardar((660, Y_PIE, 1000, 2495), 'f1.png')
 guardar((660, 2540, 1000, 2563), 'f3.png')
 redes = [(660, 726, 'https://www.facebook.com/uchile/', 'Facebook'), (726, 792, 'https://twitter.com/uchile', 'X'),
          (792, 856, 'https://www.instagram.com/uchile/', 'Instagram'), (856, 920, 'https://www.youtube.com/uchile', 'YouTube'),
@@ -86,7 +103,7 @@ for k, (x0, x1, l, a) in enumerate(redes):
     n = guardar((x0, 2495, x1, 2540), f'i{k}.png')
     iconos += f'<div style="display:inline-block;vertical-align:top;width:{(x1-x0)/3.4:.2f}%;">{img(n, x1-x0, a, l)}</div>'
 derecha = img('f1.png', 340, 'Infórmate en @uchile', None) + '<div style="font-size:0;line-height:0;">' + iconos + '</div>' + img('f3.png', 340, '', None)
-out.append('<div style="font-size:0;line-height:0;background:#0b3f8c;">'
+out.append('<div style="font-size:0;line-height:0;background:' + AZUL + ';">'
            + celda(660, img('f0.png', 660, 'Prensa UChile. Material producido por la Dirección de Comunicaciones junto a comunicadoras y comunicadores de vicerrectorías y direcciones de Rectoría.', None), 'pie')
            + celda(340, derecha, 'pie') + '</div>')
 
@@ -99,7 +116,10 @@ html = f'''<!DOCTYPE html>
 @media only screen and (max-width:620px){{
   .gap{{display:none!important;}}
   .col{{display:block!important;width:100%!important;padding:0 16px!important;box-sizing:border-box!important;}}
-  .pie{{display:block!important;width:100%!important;}}
+  .banda,.pie{{display:block!important;width:100%!important;}}
+}}
+@media only screen and (min-width:621px){{
+  .marco{{border-left:{MARCO}px solid #dddddc;border-right:{MARCO}px solid #dddddc;}}
 }}
 @media (prefers-color-scheme:dark){{ .txt{{color:#d0d2d6!important;}} }}
 </style></head>
