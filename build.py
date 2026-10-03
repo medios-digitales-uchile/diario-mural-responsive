@@ -14,21 +14,18 @@ im = Image.open(carpeta / 'original.png').convert('RGB')
 W = im.width
 U = 'https://uchile.cl/'
 
-# Zonas verticales del PNG: encabezado azul a sangre (la palabra UNIVERSITARIO baja
-# hasta y 143), cuerpo con marco gris de 3 px a cada lado y pie azul a sangre.
-Y_CUERPO, Y_PIE = 144, 2466
+# Zonas verticales del PNG: franja azul a sangre hasta y 126, desde ahí marco gris de
+# 3 px a cada lado hasta el pie azul (y 2466). La palabra UNIVERSITARIO baja hasta y 143,
+# así que su parte inferior va como pieza aparte dentro del marco.
+Y_MARCO, Y_CUERPO, Y_PIE = 126, 144, 2466
 MARCO = 3
-# El marco empieza en y 126, dentro del encabezado: se blanquea ahí para que no
-# quede como imagen (en móvil no lleva marco).
-for y in range(126, Y_CUERPO):
-    for x in list(range(MARCO)) + list(range(W - MARCO, W)):
-        im.putpixel((x, y), (255, 255, 255))
 
 # (y0, y1, modo, [(x0, x1, enlace, alt)])
 # modo: 'sangre' = ancho completo sin marco; 'recorte' = cada bloque se recorta a su
 # contenido y los márgenes pasan a huecos; 'banda' = sin recorte pero sin el marco.
 filas = [
- (0, Y_CUERPO, 'sangre', [(0, 1000, None, 'Diario Mural Universitario. Boletín informativo N° 41, septiembre 2026')]),
+ (0, Y_MARCO, 'sangre', [(0, 1000, None, 'Diario Mural Universitario. Boletín informativo N° 41, septiembre 2026')]),
+ (Y_MARCO, Y_CUERPO, 'banda', [(0, 1000, None, '')]),
  (Y_CUERPO, 614, 'recorte', [(0, 353, U+'u244644', 'U+GESTIÓN: U. de Chile fortalece gestión financiera institucional con nuevo Módulo de Transferencias en SAP'),
                    (353, 683, None, 'CSAI: Nuevas/os integrantes académicas/os de la CSAI'),
                    (683, 1000, U+'u243664', 'SISIB: U. de Chile evaluó 67 revistas científicas de universidades estatales')]),
