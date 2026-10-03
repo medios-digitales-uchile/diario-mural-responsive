@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guía del Diario Mural</title>
+<style>
+:root{--azul:#004b93;--tinta:#1d2430;--suave:#5b6472;--linea:#d6dae0;--fondo:#f3f4f6}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--tinta);background:var(--fondo)}
+header{background:var(--azul);color:#fff;padding:28px 16px}
+header div,main{max-width:820px;margin:0 auto}
+header h1{margin:0 0 6px;font-size:24px}
+header p{margin:0;opacity:.9}
+main{padding:24px 16px 60px}
+section{background:#fff;border:1px solid var(--linea);border-radius:10px;padding:20px 24px;margin-bottom:18px}
+h2{font-size:18px;margin:0 0 12px;color:var(--azul)}
+h3{font-size:15px;margin:18px 0 6px}
+ol,ul{padding-left:22px;margin:8px 0}
+li{margin:4px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}
+th,td{border:1px solid var(--linea);padding:6px 10px;text-align:left}
+th{background:#f7f8fa}
+code{background:#f1f3f6;padding:1px 5px;border-radius:4px;font-size:13px}
+.nota{border-left:4px solid #e7b100;background:#fffaf0;padding:10px 14px;border-radius:4px;margin:12px 0}
+.esquema{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.esquema div{border:2px dashed #c8102e;border-radius:6px;padding:10px;font-size:13px;color:var(--suave);text-align:center}
+@media (max-width:600px){section{padding:16px}.esquema{grid-template-columns:1fr}}
+@media print{body{background:#fff}header{background:#fff;color:var(--tinta);padding:0 0 12px;border-bottom:2px solid var(--azul)}section{border:0;padding:0;margin:0 0 18px;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div>
+  <h1>Guía del Diario Mural responsive</h1>
+  <p>Cómo diseñar el boletín para que se corte bien y cómo armar el correo con la herramienta.</p>
+</div></header>
+<main>
+
+<section>
+  <h2>Qué cambia</h2>
+  <p>El boletín se sigue diseñando como una sola imagen de 1000 px de ancho. La diferencia es que ahora no se envía entera: la herramienta la corta en piezas, una por noticia, y arma un correo que en el computador se ve igual al diseño y en el celular muestra las noticias una debajo de otra, en una columna legible y con sus enlaces funcionando.</p>
+  <p>Para que los cortes salgan limpios, el diseño tiene que respetar unas pocas reglas de espacio. Son las de la sección siguiente.</p>
+</section>
+
+<section>
+  <h2>1. Reglas de diseño</h2>
+
+  <h3>Lienzo</h3>
+  <ul>
+    <li>1000 px de ancho, el alto que haga falta, RGB.</li>
+    <li>Exportar como PNG, igual que hoy (Guardar para web, PNG-8 o PNG-24).</li>
+  </ul>
+
+  <h3>Filas y columnas</h3>
+  <p>El boletín se ordena en filas. Cada fila tiene una, dos o tres noticias lado a lado.</p>
+  <div class="esquema"><div>Noticia A</div><div>Noticia B</div><div>Noticia C</div></div>
+  <ul>
+    <li><b>Entre una fila y la siguiente</b>, al menos <b>20 px de blanco a todo el ancho</b>. Nada puede cruzar esa franja: ni letras, ni sombras, ni pestañas de un bloque de color. En el celular, cada fila se corta por ahí.</li>
+    <li><b>Entre dos noticias de la misma fila</b>, al menos <b>20 px de blanco en toda la altura de la fila</b>. Una línea divisoria horizontal fina puede cruzar; nada más.</li>
+    <li><b>Cada noticia completa dentro de su columna</b>: antetítulo, título, foto y texto. Si algo de una noticia se mete en la columna vecina, en el celular queda partido.</li>
+  </ul>
+  <p>En Photoshop conviene armar la grilla con <b>Vista &gt; Nueva disposición de guías</b>: márgenes izquierdo y derecho de 64 px y medianil de 24 px, con 2 o 3 columnas según la fila.</p>
+
+  <h3>Bloques de color a todo el ancho</h3>
+  <ul>
+    <li>Van solos en su fila, con la franja blanca de 20 px arriba y abajo.</li>
+    <li>Si llevan texto y una imagen al lado (como la guía de Estrategias metodológicas de septiembre), que el texto y la imagen se puedan separar con un corte vertical recto. En el celular quedan uno debajo del otro.</li>
+  </ul>
+
+  <h3>Tamaño de letra</h3>
+  <p>En el celular, cada pieza se muestra a unos 360 px de ancho. Una pieza más ancha que eso se achica, y su letra también. Para que el cuerpo de texto se lea en el celular (12 px o más), el tamaño mínimo depende del ancho de la pieza:</p>
+  <table>
+    <tr><th>Ancho de la noticia o bloque</th><th>Letra mínima del cuerpo</th></tr>
+    <tr><td>hasta 360 px (tres columnas)</td><td>12 px</td></tr>
+    <tr><td>450 a 550 px (dos columnas)</td><td>15 a 18 px</td></tr>
+    <tr><td>650 px</td><td>22 px</td></tr>
+    <tr><td>1000 px (todo el ancho)</td><td>34 px</td></tr>
+  </table>
+  <p>La regla general: letra mínima = 12 × ancho de la pieza ÷ 360. Un bloque a todo el ancho con letra chica no se va a poder leer en el celular.</p>
+
+  <h3>Encabezado y pie</h3>
+  <ul>
+    <li><b>Encabezado</b>: puede cambiar cada mes (número y mes del boletín), pero tiene que terminar antes de la primera fila de noticias. En septiembre la palabra UNIVERSITARIO bajaba hasta la zona de noticias; mejor que no pase.</li>
+    <li><b>Pie institucional</b> (Prensa UChile y redes sociales): tiene que ser <b>idéntico al de septiembre, abajo del todo</b>: 97 px de alto, la firma en los primeros 660 px y las redes en los últimos 340. La herramienta lo corta siempre igual, con un enlace por red social. Si el pie cambia, hay que avisar para ajustar la herramienta.</li>
+  </ul>
+
+  <h3>Marco gris</h3>
+  <p>Septiembre tiene un marco gris de 3 px a cada lado. La herramienta lo respeta, pero no hace falta: en el celular no se ve y complica los bloques de color que llegan al borde. Recomendamos no usarlo.</p>
+</section>
+
+<section>
+  <h2>2. Armar el correo con la herramienta</h2>
+  <p>La herramienta es la página <code>index.html</code> de esta carpeta. Se abre con doble clic en Chrome; no hay que instalar nada, pero necesita conexión a internet.</p>
+  <ol>
+    <li><b>Cargar PNG</b>: el boletín del mes. La herramienta propone sola los cortes entre filas (líneas rojas) y entre columnas (líneas azules), y marca dónde empieza el pie (línea naranja).</li>
+    <li><b>Cargar configuración</b> (opcional): el archivo <code>configuracion.json</code> del ZIP del mes anterior. Trae los cortes, enlaces y textos de ese mes como punto de partida. Sirve si el diseño se parece; si no, mejor partir de lo que sugiere la herramienta.</li>
+    <li><b>Datos del mes</b>: título del correo, dirección web de la carpeta donde quedarán las imágenes (termina en <code>/</code>), enlace "míralo en tu navegador" y enlace del audio.</li>
+    <li><b>Revisar los cortes</b> en la imagen:
+      <ul>
+        <li>Arrastrar las líneas para moverlas.</li>
+        <li><b>Alt + clic</b> agrega un corte entre filas.</li>
+        <li><b>Doble clic</b> dentro de una fila agrega un corte entre columnas (por ejemplo, entre el texto y la portada de un bloque de color).</li>
+        <li>En el panel de cada fila: <b>Unir con la de abajo</b> quita un corte entre filas y <b>Quitar corte</b> quita un corte entre columnas.</li>
+      </ul>
+    </li>
+    <li><b>El tipo de cada fila</b>, en el selector del panel:
+      <ul>
+        <li><b>Noticias recortadas</b>: filas de noticias sobre fondo blanco. Cada noticia se recorta a su contenido. Es lo normal.</li>
+        <li><b>Bloque a todo el ancho</b>: encabezado y franjas de color que llegan a los bordes.</li>
+        <li><b>Bloque dentro del marco</b>: un bloque de color que no pasa sobre el marco gris. Solo si se usa marco.</li>
+      </ul>
+    </li>
+    <li><b>Enlace y título de cada noticia</b>. El título lo leen los lectores de pantalla y aparece si el correo bloquea las imágenes; basta con el titular de la noticia.</li>
+    <li><b>Vista previa</b>: muestra el correo en teléfono y en escritorio. Revisar que ninguna noticia quede partida y que el texto se lea en el teléfono.</li>
+    <li><b>Descargar ZIP</b>. Contiene:
+      <ul>
+        <li><code>correo.html</code>: el HTML para phpList.</li>
+        <li>las imágenes <code>.png</code>: se suben todas a la carpeta del mes, <b>sin cambiarles el nombre</b>.</li>
+        <li><code>vista-local.html</code>: el mismo correo con las imágenes de la carpeta, para revisarlo en el computador.</li>
+        <li><code>configuracion.json</code>: para partir el mes siguiente.</li>
+      </ul>
+    </li>
+  </ol>
+  <div class="nota">Los nombres de las imágenes llevan una huella de su contenido (por ejemplo <code>f2c0-1a2b3c4d.png</code>). Si una imagen cambia, cambia su nombre, y así Gmail no puede mostrar una versión vieja guardada. Por eso no hay que renombrarlas.</div>
+</section>
+
+<section>
+  <h2>3. Envío</h2>
+  <ol>
+    <li>Subir las imágenes a la carpeta del mes.</li>
+    <li>Enviar <code>correo.html</code> a VTI. El HTML tiene que cargarse en phpList <b>en modo código</b> (fuente), no en el editor visual: el editor visual puede reescribirlo y romper el orden en el celular.</li>
+    <li>Antes del envío masivo, un envío de prueba a una casilla propia.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>4. Revisión antes del envío masivo</h2>
+  <ul>
+    <li>En el computador (Gmail web): se ve igual al diseño.</li>
+    <li>En el celular (app de Gmail): una noticia debajo de otra, con margen a los lados, y el texto se lee sin hacer zoom.</li>
+    <li>En el celular con modo oscuro: el boletín sigue blanco.</li>
+    <li>Tocar dos o tres noticias y un ícono de redes: abren donde corresponde.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Problemas frecuentes</h2>
+  <table>
+    <tr><th>Qué pasa</th><th>Por qué</th><th>Qué hacer</th></tr>
+    <tr><td>En el celular una noticia aparece partida o mezclada con otra</td><td>Un corte pasa por dentro de la noticia, o algo cruza la franja blanca</td><td>Mover el corte en la herramienta; si no hay franja blanca, corregir el diseño</td></tr>
+    <tr><td>El texto de un bloque no se lee en el celular</td><td>El bloque es muy ancho para su tamaño de letra</td><td>Separar texto e imagen con un corte de columna, o subir el tamaño de letra</td></tr>
+    <tr><td>Las imágenes no aparecen</td><td>La dirección web de la carpeta no coincide con donde se subieron, o se renombraron</td><td>Revisar la dirección en "Datos del mes" y volver a descargar el ZIP</td></tr>
+    <tr><td>Se ve una imagen del mes anterior</td><td>Una imagen se reemplazó con el mismo nombre</td><td>Subir siempre las imágenes del ZIP tal cual, sin renombrar</td></tr>
+    <tr><td>En el celular se ve como el computador, pero chico</td><td>phpList o el editor visual borró los estilos del HTML</td><td>Cargar el HTML en modo código</td></tr>
+  </table>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Armador del Diario Mural</title>
+<style>
+:root{--azul:#004b93;--tinta:#1d2430;--suave:#5b6472;--linea:#d6dae0;--fondo:#f3f4f6;--panel:#fff;--rojo:#c8102e;--verde:#0f7b5f;--morado:#6b3fa0}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--tinta);background:var(--fondo)}
+header{background:var(--azul);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:600}
+header .acciones{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+button,.boton{font:inherit;border:1px solid var(--linea);background:#fff;color:var(--tinta);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover,.boton:hover{border-color:var(--azul)}
+button.principal{background:#fff;color:var(--azul);border-color:#fff;font-weight:600}
+header button{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+header button.principal{background:#fff;color:var(--azul)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=text],input[type=url],select{font:inherit;width:100%;padding:5px 8px;border:1px solid var(--linea);border-radius:5px;background:#fff;color:var(--tinta)}
+main{display:grid;grid-template-columns:minmax(320px,520px) 1fr;gap:0;height:calc(100vh - 56px)}
+#lienzo-caja{overflow:auto;background:#e4e6ea;border-right:1px solid var(--linea);position:relative}
+#lienzo{display:block;width:100%;cursor:crosshair}
+#vacio{padding:40px 24px;color:var(--suave)}
+#vacio h2{color:var(--tinta);font-size:16px;margin:0 0 8px}
+#panel{overflow:auto;padding:16px 20px 40px}
+section{background:var(--panel);border:1px solid var(--linea);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+section h2{font-size:14px;margin:0 0 10px}
+.campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--suave)}
+label input,label select{margin-top:3px}
+.ayuda{font-size:12px;color:var(--suave);margin:6px 0 0}
+.fila{border:1px solid var(--linea);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#fff}
+.fila.activa{border-color:var(--azul);box-shadow:0 0 0 2px rgba(0,75,147,.15)}
+.fila-cab{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.fila-cab strong{font-size:13px}
+.fila-cab select{width:auto}
+.fila-cab .y{font-size:12px;color:var(--suave)}
+.fila-cab .der{margin-left:auto;display:flex;gap:6px}
+.col{display:grid;grid-template-columns:70px 1fr 1fr auto;gap:8px;align-items:end;padding:6px 0;border-top:1px dashed var(--linea)}
+.col:first-of-type{border-top:0}
+.col .num{font-size:12px;color:var(--suave);padding-bottom:6px}
+.mini{padding:3px 8px;font-size:12px}
+#avisos{border-color:#e7b100;background:#fffaf0;display:none}
+#avisos ul{margin:0;padding-left:18px}
+#vista{display:none}
+#vista .barra{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+#vista .barra .estado{color:var(--suave);font-size:12px}
+.marcos{display:flex;gap:16px;align-items:flex-start;overflow:auto}
+.marcos figure{margin:0}
+.marcos figcaption{font-size:12px;color:var(--suave);margin-bottom:4px}
+.marcos iframe{border:1px solid var(--linea);background:#fff;display:block}
+#escala1000{transform-origin:0 0}
+.leyenda{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--suave);margin-top:8px}
+.leyenda span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+@media (max-width:900px){main{grid-template-columns:1fr;height:auto}#lienzo-caja{max-height:70vh}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Armador del Diario Mural</h1>
+  <a href="guia.html" target="_blank" style="color:#fff;font-size:13px">Guía</a>
+  <div class="acciones">
+    <label class="boton" style="color:#fff;border-color:rgba(255,255,255,.5);background:transparent">1. Cargar PNG<input id="archivo-png" type="file" accept="image/png" hidden></label>
+    <label class="boton" style="color:#fff;border-color:rgba(255,255,255,.5);background:transparent">Cargar configuración<input id="archivo-cfg" type="file" accept="application/json,.json" hidden></label>
+    <button id="btn-vista" disabled>Vista previa</button>
+    <button id="btn-zip" class="principal" disabled>Descargar ZIP</button>
+  </div>
+</header>
+<main>
+  <div id="lienzo-caja">
+    <div id="vacio">
+      <h2>Carga el PNG del boletín</h2>
+      <p>El PNG tiene que medir 1000 px de ancho. Al cargarlo, la herramienta propone los cortes entre filas y columnas; los ajustas aquí arrastrando las líneas.</p>
+      <p>Si tienes la configuración del mes anterior (el archivo <code>configuracion.json</code> del ZIP), cárgala después del PNG para partir de esos cortes y textos.</p>
+    </div>
+    <canvas id="lienzo" hidden></canvas>
+  </div>
+  <div id="panel">
+    <section id="avisos"><h2>Revisa antes de descargar</h2><ul></ul></section>
+    <section>
+      <h2>Datos del mes</h2>
+      <div class="campos">
+        <label>Título del correo<input id="c-titulo" type="text" placeholder="Diario Mural Universitario - La Uchile en octubre"></label>
+        <label>Dirección web de las imágenes (carpeta del mes)<input id="c-base" type="url" placeholder="https://listastatic.uchile.cl/phplist/XIMENA/2026-10/"></label>
+        <label>Enlace "míralo en tu navegador"<input id="c-navegador" type="url" value="https://uchile.cl/diario-mural"></label>
+        <label>Enlace del audio (vacío si no hay)<input id="c-audio" type="url" placeholder="https://drive.google.com/..."></label>
+      </div>
+    </section>
+    <section>
+      <h2>Filas y noticias</h2>
+      <p class="ayuda">En la imagen: arrastra las líneas rojas (cortes entre filas) y azules (cortes entre columnas). <b>Alt + clic</b> agrega un corte entre filas; <b>doble clic</b> dentro de una fila agrega un corte de columna. La línea naranja marca dónde empieza el pie institucional.</p>
+      <div class="leyenda"><span style="--c:rgba(0,0,0,.08)">Noticias recortadas</span><span style="--c:rgba(15,123,95,.35)">Bloque dentro del marco</span><span style="--c:rgba(107,63,160,.35)">Bloque a todo el ancho</span></div>
+      <div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="btn-sugerir" disabled>Volver a sugerir todos los cortes</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tinta)">Marco lateral (px)<input id="c-marco" type="text" style="width:56px" value="0"></label>
+      </div>
+      <div id="filas"></div>
+    </section>
+    <section id="vista">
+      <div class="barra"><h2 style="margin:0">Vista previa</h2><span class="estado"></span></div>
+      <div class="marcos">
+        <figure><figcaption>Teléfono (390 px)</figcaption><div style="height:760px;overflow:auto;border:1px solid var(--linea)"><iframe id="v390" width="390" height="760" scrolling="no" style="border:0"></iframe></div></figure>
+        <figure><figcaption>Escritorio (1000 px, a escala)</figcaption><div style="height:760px;overflow:auto;border:1px solid var(--linea)"><div id="caja1000" style="overflow:hidden"><iframe id="v1000" width="1000" height="1500" scrolling="no" style="border:0"></iframe></div></div></figure>
+      </div>
+    </section>
+  </div>
+</main>
+<script src="vendor/pako.min.js"></script>
+<script src="vendor/UPNG.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="motor.js"></script>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const MODOS = { recorte: 'Noticias recortadas', banda: 'Bloque dentro del marco', sangre: 'Bloque a todo el ancho' };
+const est = { im: null, pngBytes: null, nombrePng: '', cfg: null, sel: 0, arrastre: null, ultimo: null };
+const lienzo = $('#lienzo'), ctx = lienzo.getContext('2d');
+
+/* ---------- Carga ---------- */
+
+$('#archivo-png').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  cargarPNG(await f.arrayBuffer(), f.name);
+  e.target.value = '';
+});
+$('#archivo-cfg').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { aplicarConfig(JSON.parse(await f.text())); } catch (err) { alertar('No pude leer ese archivo de configuración.'); }
+  e.target.value = '';
+});
+
+function cargarPNG(buf, nombre) {
+  est.pngBytes = buf; est.nombrePng = nombre;
+  est.im = Motor.leerPNG(buf);
+  const marco = Motor.detectarMarco(est.im);
+  est.cfg = {
+    titulo: $('#c-titulo').value, urlNavegador: $('#c-navegador').value, urlAudio: $('#c-audio').value,
+    baseImagenes: $('#c-base').value, marco, pie: Motor.detectarPie(est.im), filas: [],
+  };
+  sugerirTodo();
+  prepararLienzo();
+  ['#btn-vista', '#btn-zip', '#btn-sugerir'].forEach(s => $(s).disabled = false);
+  revisar();
+}
+
+function aplicarConfig(c) {
+  if (!est.im) { alertar('Primero carga el PNG; después la configuración.'); return; }
+  est.cfg = Object.assign({}, est.cfg, c);
+  // Si el PNG nuevo es más corto, ajustar los cortes que quedaron fuera
+  est.cfg.pie = Math.min(est.cfg.pie, est.im.alto - 1);
+  est.cfg.filas = est.cfg.filas.filter(f => f.y0 < est.cfg.pie);
+  if (est.cfg.filas.length) est.cfg.filas.at(-1).y1 = est.cfg.pie;
+  ['titulo', 'urlNavegador', 'urlAudio', 'baseImagenes'].forEach(k => campo(k).value = est.cfg[k] || '');
+  $('#c-marco').value = est.cfg.marco;
+  dibujar(); pintarFilas(); revisar();
+}
+
+const campo = k => ({ titulo: $('#c-titulo'), urlNavegador: $('#c-navegador'), urlAudio: $('#c-audio'), baseImagenes: $('#c-base') })[k];
+['titulo', 'urlNavegador', 'urlAudio', 'baseImagenes'].forEach(k => campo(k).addEventListener('input', () => { if (est.cfg) { est.cfg[k] = campo(k).value.trim(); revisar(); } }));
+$('#c-marco').addEventListener('change', () => { const v = parseInt($('#c-marco').value, 10); if (est.cfg && v >= 0 && v < 20) { est.cfg.marco = v; dibujar(); } });
+
+/* ---------- Sugerencias ---------- */
+
+function sugerirTodo() {
+  const { im, cfg } = est;
+  const cortes = Motor.sugerirCortesY(im, cfg.marco, cfg.pie);
+  const bordes = [0, ...cortes, cfg.pie];
+  cfg.filas = bordes.slice(0, -1).map((y0, i) => nuevaFila(y0, bordes[i + 1]));
+  $('#c-marco').value = cfg.marco;
+  est.sel = 0;
+}
+
+function nuevaFila(y0, y1) {
+  const { im, cfg } = est;
+  const modo = Motor.sugerirModo(im, cfg.marco, y0, y1);
+  const xs = modo === 'recorte' ? Motor.sugerirColumnas(im, cfg.marco, y0, y1) : [];
+  return { y0, y1, modo, columnas: [0, ...xs].map(x0 => ({ x0, enlace: '', alt: '' })) };
+}
+
+$('#btn-sugerir').addEventListener('click', () => {
+  if (!confirmarSuave()) return;
+  sugerirTodo(); dibujar(); pintarFilas(); revisar();
+});
+function confirmarSuave() {
+  const hay = est.cfg.filas.some(f => f.columnas.some(c => c.enlace || c.alt));
+  if (!hay) return true;
+  const b = $('#btn-sugerir');
+  if (b.dataset.seguro) { delete b.dataset.seguro; b.textContent = 'Volver a sugerir todos los cortes'; return true; }
+  b.dataset.seguro = '1'; b.textContent = 'Se borrarán enlaces y títulos. Clic otra vez para confirmar';
+  setTimeout(() => { delete b.dataset.seguro; b.textContent = 'Volver a sugerir todos los cortes'; }, 4000);
+  return false;
+}
+
+/* ---------- Lienzo ---------- */
+
+let imagenBase = null;
+function prepararLienzo() {
+  const { im } = est;
+  lienzo.width = im.ancho; lienzo.height = im.alto;
+  imagenBase = new ImageData(new Uint8ClampedArray(im.rgba.buffer.slice(0)), im.ancho, im.alto);
+  $('#vacio').hidden = true; lienzo.hidden = false;
+  dibujar(); pintarFilas();
+}
+
+function dibujar() {
+  if (!est.im) return;
+  const { cfg } = est, W = est.im.ancho;
+  ctx.putImageData(imagenBase, 0, 0);
+  const k = lienzo.width / lienzo.getBoundingClientRect().width || 1;   // px de imagen por px de pantalla
+  cfg.filas.forEach((f, i) => {
+    const color = f.modo === 'sangre' ? 'rgba(107,63,160,.18)' : f.modo === 'banda' ? 'rgba(15,123,95,.16)' : null;
+    if (color) { ctx.fillStyle = color; ctx.fillRect(0, f.y0, W, f.y1 - f.y0); }
+    if (i === est.sel) { ctx.strokeStyle = '#004b93'; ctx.lineWidth = 4 * k; ctx.strokeRect(2 * k, f.y0 + 2 * k, W - 4 * k, f.y1 - f.y0 - 4 * k); }
+    if (f.y1 - f.y0 < 30 * k) { f.columnas.slice(1).forEach(c => linea(c.x0, f.y0, c.x0, f.y1, '#1565c0', k)); if (i > 0) linea(0, f.y0, W, f.y0, '#c8102e', k); return; }
+    ctx.fillStyle = 'rgba(0,75,147,.92)';
+    ctx.font = `bold ${13 * k}px -apple-system,Helvetica,Arial`;
+    const etiqueta = `Fila ${i + 1}`;
+    const tw = ctx.measureText(etiqueta).width + 10 * k;
+    ctx.fillRect(W - tw - 6 * k, f.y0 + 6 * k, tw, 20 * k);
+    ctx.fillStyle = '#fff'; ctx.fillText(etiqueta, W - tw - 1 * k, f.y0 + 21 * k);
+    f.columnas.slice(1).forEach(c => linea(c.x0, f.y0, c.x0, f.y1, '#1565c0', k));
+    if (i > 0) linea(0, f.y0, W, f.y0, '#c8102e', k);
+  });
+  linea(0, cfg.pie, W, cfg.pie, '#e67e00', k);
+}
+
+function linea(x0, y0, x1, y1, color, k) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2 * k; ctx.setLineDash([8 * k, 5 * k]);
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.restore();
+}
+
+function coords(e) {
+  const r = lienzo.getBoundingClientRect(), k = lienzo.width / r.width;
+  return { x: Math.round((e.clientX - r.left) * k), y: Math.round((e.clientY - r.top) * k), k };
+}
+
+function filaEn(y) { return est.cfg.filas.findIndex(f => y >= f.y0 && y < f.y1); }
+
+function objetivo(p) {
+  const { cfg } = est, tol = 7 * p.k;
+  if (Math.abs(p.y - cfg.pie) <= tol) return { tipo: 'pie' };
+  for (let i = 1; i < cfg.filas.length; i++) if (Math.abs(p.y - cfg.filas[i].y0) <= tol) return { tipo: 'fila', i };
+  const i = filaEn(p.y);
+  if (i >= 0) {
+    const f = cfg.filas[i];
+    for (let j = 1; j < f.columnas.length; j++) if (Math.abs(p.x - f.columnas[j].x0) <= tol) return { tipo: 'col', i, j };
+  }
+  return null;
+}
+
+lienzo.addEventListener('mousemove', e => {
+  if (!est.im) return;
+  const p = coords(e);
+  if (est.arrastre) { mover(est.arrastre, p); return; }
+  const o = objetivo(p);
+  lienzo.style.cursor = !o ? 'crosshair' : o.tipo === 'col' ? 'ew-resize' : 'ns-resize';
+});
+lienzo.addEventListener('mousedown', e => {
+  if (!est.im) return;
+  const p = coords(e), o = objetivo(p);
+  if (o) { est.arrastre = o; e.preventDefault(); return; }
+  if (e.altKey) { agregarCorteFila(p.y); return; }
+  const i = filaEn(p.y);
+  if (i >= 0) { est.sel = i; dibujar(); pintarFilas(true); }
+});
+addEventListener('mouseup', () => { if (est.arrastre) { est.arrastre = null; pintarFilas(); revisar(); } });
+lienzo.addEventListener('dblclick', e => {
+  const p = coords(e), i = filaEn(p.y);
+  if (i < 0) return;
+  const f = est.cfg.filas[i];
+  if (f.columnas.some(c => Math.abs(c.x0 - p.x) < 10)) return;
+  f.columnas.push({ x0: p.x, enlace: '', alt: '' });
+  f.columnas.sort((a, b) => a.x0 - b.x0);
+  f.columnas[0].x0 = 0;
+  est.sel = i; dibujar(); pintarFilas(); revisar();
+});
+
+function mover(o, p) {
+  const { cfg } = est;
+  if (o.tipo === 'pie') {
+    const ult = cfg.filas.at(-1);
+    cfg.pie = Math.max(ult.y0 + 10, Math.min(est.im.alto - 80, p.y)); ult.y1 = cfg.pie;
+  } else if (o.tipo === 'fila') {
+    const a = cfg.filas[o.i - 1], b = cfg.filas[o.i];
+    const y = Math.max(a.y0 + 10, Math.min(b.y1 - 10, p.y));
+    a.y1 = y; b.y0 = y;
+  } else {
+    const cols = cfg.filas[o.i].columnas;
+    const min = cols[o.j - 1].x0 + 10, max = (cols[o.j + 1] ? cols[o.j + 1].x0 : est.im.ancho) - 10;
+    cols[o.j].x0 = Math.max(min, Math.min(max, p.x));
+  }
+  dibujar();
+}
+
+function agregarCorteFila(y) {
+  const { cfg } = est, i = filaEn(y);
+  if (i < 0) return;
+  const f = cfg.filas[i];
+  if (y - f.y0 < 10 || f.y1 - y < 10) return;
+  const nueva = nuevaFila(y, f.y1);
+  f.y1 = y;
+  cfg.filas.splice(i + 1, 0, nueva);
+  est.sel = i + 1; dibujar(); pintarFilas(); revisar();
+}
+
+/* ---------- Panel de filas ---------- */
+
+function pintarFilas(soloSeleccion) {
+  const caja = $('#filas');
+  if (soloSeleccion) {
+    caja.querySelectorAll('.fila').forEach((el, i) => el.classList.toggle('activa', i === est.sel));
+    caja.children[est.sel]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
+  }
+  caja.innerHTML = '';
+  est.cfg.filas.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'fila' + (i === est.sel ? ' activa' : '');
+    const opciones = Object.entries(MODOS).map(([v, t]) => `<option value="${v}"${v === f.modo ? ' selected' : ''}>${t}</option>`).join('');
+    el.innerHTML = `<div class="fila-cab"><strong>Fila ${i + 1}</strong><span class="y">y ${f.y0} a ${f.y1}</span>
+      <select data-k="modo">${opciones}</select>
+      <span class="der">${f.modo === 'recorte' ? '<button class="mini" data-acc="sugcol">Sugerir columnas</button>' : ''}
+      ${i < est.cfg.filas.length - 1 ? '<button class="mini" data-acc="unir">Unir con la de abajo</button>' : ''}</span></div>`;
+    f.columnas.forEach((c, j) => {
+      const fila = document.createElement('div');
+      fila.className = 'col';
+      fila.innerHTML = `<span class="num">Columna ${j + 1}</span>
+        <label>Enlace<input type="url" data-j="${j}" data-k="enlace" value="${atr(c.enlace)}" placeholder="https://uchile.cl/..."></label>
+        <label>Título (lo leen los lectores de pantalla)<input type="text" data-j="${j}" data-k="alt" value="${atr(c.alt)}"></label>
+        ${j > 0 ? `<button class="mini" data-acc="quitarcol" data-j="${j}">Quitar corte</button>` : '<span></span>'}`;
+      el.appendChild(fila);
+    });
+    el.addEventListener('focusin', () => { if (est.sel !== i) { est.sel = i; dibujar(); pintarFilas(true); } });
+    el.addEventListener('input', e => {
+      const t = e.target, k = t.dataset.k;
+      if (k === 'enlace' || k === 'alt') { f.columnas[+t.dataset.j][k] = t.value.trim(); revisar(); }
+    });
+    el.addEventListener('change', e => {
+      if (e.target.dataset.k === 'modo') { f.modo = e.target.value; dibujar(); pintarFilas(); revisar(); }
+    });
+    el.addEventListener('click', e => {
+      const acc = e.target.dataset.acc; if (!acc) return;
+      if (acc === 'unir') { const b = est.cfg.filas[i + 1]; f.y1 = b.y1; est.cfg.filas.splice(i + 1, 1); }
+      if (acc === 'quitarcol') f.columnas.splice(+e.target.dataset.j, 1);
+      if (acc === 'sugcol') {
+        const xs = Motor.sugerirColumnas(est.im, est.cfg.marco, f.y0, f.y1);
+        const viejas = f.columnas;
+        f.columnas = [0, ...xs].map((x0, j) => ({ x0, enlace: viejas[j]?.enlace || '', alt: viejas[j]?.alt || '' }));
+      }
+      est.sel = Math.min(i, est.cfg.filas.length - 1); dibujar(); pintarFilas(); revisar();
+    });
+    caja.appendChild(el);
+  });
+}
+const atr = v => String(v ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+/* ---------- Revisión, vista previa y descarga ---------- */
+
+function revisar() {
+  const av = [];
+  const { cfg, im } = est;
+  if (!cfg) return;
+  if (im.ancho !== 1000) av.push(`El PNG mide ${im.ancho} px de ancho; tiene que medir 1000 px.`);
+  if (!cfg.titulo) av.push('Falta el título del correo.');
+  if (!cfg.baseImagenes) av.push('Falta la dirección web de las imágenes: sin ella, el correo no muestra nada.');
+  else if (!/^https:\/\/.+\/$/.test(cfg.baseImagenes)) av.push('La dirección web de las imágenes tiene que empezar con https:// y terminar en /.');
+  cfg.filas.forEach((f, i) => {
+    if (i === 0) return;   // el encabezado no lleva enlace
+    f.columnas.forEach((c, j) => {
+      const donde = `Fila ${i + 1}${f.columnas.length > 1 ? `, columna ${j + 1}` : ''}`;
+      if (f.modo === 'recorte' && !c.alt) av.push(`${donde}: falta el título.`);
+      if (c.enlace && !/^(https?:\/\/|mailto:)/.test(c.enlace)) av.push(`${donde}: el enlace tiene que empezar con https:// o mailto:.`);
+    });
+  });
+  const ul = $('#avisos ul');
+  ul.innerHTML = av.map(a => `<li>${atr(a)}</li>`).join('');
+  $('#avisos').style.display = av.length ? 'block' : 'none';
+  return av;
+}
+
+function generar() {
+  const r = Motor.generar(est.im, est.cfg);
+  if (r.avisos.length) { const ul = $('#avisos ul'); ul.innerHTML += r.avisos.map(a => `<li>${atr(a)}</li>`).join(''); $('#avisos').style.display = 'block'; }
+  return r;
+}
+
+function htmlLocal(r) {
+  // Para la vista previa: cada nombre de pieza se reemplaza por una URL local del navegador.
+  let html = r.armar('');
+  for (const [n, bytes] of r.piezas) html = html.split(n).join(URL.createObjectURL(new Blob([bytes], { type: 'image/png' })));
+  return html;
+}
+
+$('#btn-vista').addEventListener('click', () => {
+  const v = $('#vista'); v.style.display = 'block';
+  v.querySelector('.estado').textContent = 'Generando...';
+  setTimeout(() => {
+    const t = performance.now(), r = generar(), html = htmlLocal(r);
+    // Sin barra de scroll dentro del iframe: el ancho útil queda exacto (390 y 1000 px).
+    for (const id of ['#v390', '#v1000']) {
+      const fr = $(id);
+      fr.onload = () => { fr.style.height = fr.contentDocument.documentElement.scrollHeight + 'px'; if (id === '#v1000') escalar1000(); };
+      fr.srcdoc = html;
+    }
+    const kb = [...r.piezas.values()].reduce((s, b) => s + b.length, 0) / 1024;
+    v.querySelector('.estado').textContent = `${r.piezas.size} imágenes, ${Math.round(kb)} KB en total. Generado en ${Math.round(performance.now() - t)} ms.`;
+    escalar1000(); v.scrollIntoView({ behavior: 'smooth' });
+  }, 30);
+});
+function escalar1000() {
+  const caja = $('#caja1000'), fr = $('#v1000');
+  const disponible = Math.max(300, $('#panel').clientWidth - 390 - 80), k = Math.min(1, disponible / 1000);
+  fr.style.transform = `scale(${k})`; fr.style.transformOrigin = '0 0';
+  caja.style.width = 1000 * k + 'px'; caja.style.height = (parseFloat(fr.style.height) || 1500) * k + 'px';
+}
+addEventListener('resize', () => { dibujar(); if ($('#vista').style.display === 'block') escalar1000(); });
+
+$('#btn-zip').addEventListener('click', async () => {
+  const av = revisar();
+  if (av && av.some(a => a.includes('dirección web'))) { alertar('Completa la dirección web de las imágenes antes de descargar.'); return; }
+  const r = generar(), zip = new JSZip();
+  zip.file('correo.html', r.armar(est.cfg.baseImagenes));
+  zip.file('vista-local.html', r.armar(''));
+  for (const [n, bytes] of r.piezas) zip.file(n, bytes);
+  zip.file('configuracion.json', JSON.stringify(est.cfg, null, 1));
+  zip.file('LEEME.txt', [
+    'Diario Mural Universitario: correo responsive',
+    '',
+    'correo.html        El HTML para cargar en phpList. Las imágenes apuntan a:',
+    '                   ' + est.cfg.baseImagenes,
+    'vista-local.html   El mismo correo con las imágenes de esta carpeta, para revisarlo en el computador.',
+    '*.png              Las imágenes: hay que subirlas todas a la dirección de arriba, sin cambiarles el nombre.',
+    'configuracion.json Los cortes, enlaces y textos de este mes. Se carga en el armador para partir el mes siguiente.',
+    '',
+    'phpList: el HTML se pega en modo código (fuente), no en el editor visual.',
+  ].join('\n'));
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (est.nombrePng.replace(/\.png$/i, '') || 'diario-mural') + '-correo.zip';
+  a.click();
+});
+
+function alertar(t) {
+  const ul = $('#avisos ul'); ul.innerHTML = `<li><b>${atr(t)}</b></li>` + ul.innerHTML; $('#avisos').style.display = 'block';
+  $('#avisos').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ---------- Modo de prueba: ?prueba=<config>&png=<ruta> genera y muestra solo el correo ---------- */
+
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (!q.get('prueba')) return;
+  const [png, cfg] = await Promise.all([fetch(q.get('png')).then(r => r.arrayBuffer()), fetch(q.get('prueba')).then(r => r.json())]);
+  const r = Motor.generar(Motor.leerPNG(png), cfg);
+  let html = r.armar('');
+  for (const [n, bytes] of r.piezas) {
+    let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    html = html.split(n).join('data:image/png;base64,' + btoa(s));
+  }
+  if (q.get('salida') === 'html') { document.body.innerHTML = '<pre id="salida"></pre>'; $('#salida').textContent = r.armar(cfg.baseImagenes); return; }
+  document.open(); document.write(html); document.close();
+})();
+</script>
+</body>
+</html>

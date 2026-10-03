@@ -1,0 +1,141 @@
+{
+ "titulo": "Diario Mural Universitario - La Uchile en septiembre",
+ "urlNavegador": "https://uchile.cl/diario-mural",
+ "urlAudio": "https://drive.google.com/file/d/18-0Km1_qAljpQOGSmAsTQOSsOoC3woE4/view?usp=sharing",
+ "baseImagenes": "https://raw.githubusercontent.com/sisibuchile/diario-mural-responsive/main/2026-09/",
+ "marco": 3,
+ "pie": 2466,
+ "filas": [
+  {
+   "y0": 0,
+   "y1": 126,
+   "modo": "sangre",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": null,
+     "alt": "Diario Mural Universitario. Boletín informativo N° 41, septiembre 2026"
+    }
+   ]
+  },
+  {
+   "y0": 126,
+   "y1": 145,
+   "modo": "banda",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": null,
+     "alt": ""
+    }
+   ]
+  },
+  {
+   "y0": 145,
+   "y1": 614,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://uchile.cl/u244644",
+     "alt": "U+GESTIÓN: U. de Chile fortalece gestión financiera institucional con nuevo Módulo de Transferencias en SAP"
+    },
+    {
+     "x0": 353,
+     "enlace": null,
+     "alt": "CSAI: Nuevas/os integrantes académicas/os de la CSAI"
+    },
+    {
+     "x0": 683,
+     "enlace": "https://uchile.cl/u243664",
+     "alt": "SISIB: U. de Chile evaluó 67 revistas científicas de universidades estatales"
+    }
+   ]
+  },
+  {
+   "y0": 614,
+   "y1": 941,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://lnkd.in/p/d-UqZe4m",
+     "alt": "Dpto. de Pregrado: Nuevo grupo de estudiantes se une al equipo de acompañamiento par de la U. de Chile"
+    },
+    {
+     "x0": 450,
+     "enlace": "https://uchile.cl/u244250",
+     "alt": "DIRBDE: Proyecto Redes reunió a estudiantes en torno a la sustentabilidad"
+    }
+   ]
+  },
+  {
+   "y0": 941,
+   "y1": 1358,
+   "modo": "sangre",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://uchile.cl/u243621",
+     "alt": "Estrategias metodológicas para el aprendizaje activo. Pueden descargar la guía aquí"
+    },
+    {
+     "x0": 645,
+     "enlace": "https://uchile.cl/u243621",
+     "alt": "Portada de la guía Estrategias Metodológicas para el Aprendizaje Activo"
+    }
+   ]
+  },
+  {
+   "y0": 1358,
+   "y1": 1715,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://www.universitaria.cl/product/entrevista-con-ricardo-ffrench-davis-el-otro-economista-de-chicago/",
+     "alt": "Editorial Universitaria: Nuevo libro Entrevista con Ricardo Ffrench-Davis. El otro economista de Chicago"
+    },
+    {
+     "x0": 497,
+     "enlace": "https://www.youtube.com/playlist?list=PLB4eJlYOs9qc",
+     "alt": "Sustentabilidad UChile: ¿Cómo llegamos hasta aquí?: UChileTV estrena serie sobre los desafíos de la sustentabilidad"
+    }
+   ]
+  },
+  {
+   "y0": 1715,
+   "y1": 2064,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://uchile.cl/u244761",
+     "alt": "Senado Universitario elige Mesa Directiva para el período 2026-2027"
+    },
+    {
+     "x0": 590,
+     "enlace": "mailto:diariomural@uchile.cl",
+     "alt": "¿Tienes una iniciativa, hito, o proyecto que te gustaría compartir con la comunidad UCHILE? Escríbenos a diariomural@uchile.cl"
+    }
+   ]
+  },
+  {
+   "y0": 2064,
+   "y1": 2466,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://uchile.cl/u244498",
+     "alt": "Deporte Azul: FEN se corona campeona de los Juegos Olímpicos Estudiantiles 2026"
+    },
+    {
+     "x0": 478,
+     "enlace": "https://uchile.cl/u244203",
+     "alt": "Casa de Bello aprueba su nuevo Plan de Desarrollo Institucional y define su rumbo para la próxima década"
+    }
+   ]
+  }
+ ]
+}
