@@ -5,11 +5,14 @@ Movil (<620px): los espacios se ocultan y cada bloque, recortado a su contenido,
 ocupa el ancho completo con el mismo margen lateral.
 """
 from PIL import Image, ImageChops
-import sys
+import sys, io, hashlib
 from pathlib import Path
 
 carpeta = Path(sys.argv[1] if len(sys.argv) > 1 else '2026-09')
 base = 'https://raw.githubusercontent.com/sisibuchile/diario-mural-responsive/main/' + carpeta.as_posix() + '/'
+for viejo in carpeta.glob('*.png'):
+    if viejo.name != 'original.png':
+        viejo.unlink()
 im = Image.open(carpeta / 'original.png').convert('RGB')
 W = im.width
 U = 'https://uchile.cl/'
@@ -47,9 +50,14 @@ BG = 'background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff)
 AZUL = '#004b93'
 
 def guardar(box, nombre):
-    im.crop(box).quantize(256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(carpeta / nombre, optimize=True)
-    return nombre
-
+    """Guarda la pieza con una huella de su contenido en el nombre: si la imagen cambia,
+    cambia la URL, y Gmail o GitHub no pueden servir una versión vieja desde su caché."""
+    buf = io.BytesIO()
+    im.crop(box).quantize(256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(buf, 'PNG', optimize=True)
+    raiz, ext = nombre.rsplit('.', 1)
+    final = f'{raiz}-{hashlib.sha1(buf.getvalue()).hexdigest()[:8]}.{ext}'
+    (carpeta / final).write_bytes(buf.getvalue())
+    return final
 
 def ancho_contenido(x0, x1, y0, y1):
     x0, x1 = max(x0, MARCO), min(x1, W - MARCO)
@@ -89,9 +97,9 @@ for i, (y0, y1, modo, cols) in enumerate(filas):
 out = cabeza + ['<div class="marco">'] + cuerpo + ['</div>']
 
 # Pie: firma a la izquierda, redes a la derecha con un enlace por icono
-guardar((0, Y_PIE, 660, 2563), 'f0.png')
-guardar((660, Y_PIE, 1000, 2495), 'f1.png')
-guardar((660, 2540, 1000, 2563), 'f3.png')
+f0 = guardar((0, Y_PIE, 660, 2563), 'f0.png')
+f1 = guardar((660, Y_PIE, 1000, 2495), 'f1.png')
+f3 = guardar((660, 2540, 1000, 2563), 'f3.png')
 redes = [(660, 726, 'https://www.facebook.com/uchile/', 'Facebook'), (726, 792, 'https://twitter.com/uchile', 'X'),
          (792, 856, 'https://www.instagram.com/uchile/', 'Instagram'), (856, 920, 'https://www.youtube.com/uchile', 'YouTube'),
          (920, 1000, 'https://cl.linkedin.com/school/uchile/', 'LinkedIn')]
@@ -99,9 +107,9 @@ iconos = ''
 for k, (x0, x1, l, a) in enumerate(redes):
     n = guardar((x0, 2495, x1, 2540), f'i{k}.png')
     iconos += f'<div style="display:inline-block;vertical-align:top;width:{(x1-x0)/3.4:.2f}%;">{img(n, x1-x0, a, l)}</div>'
-derecha = img('f1.png', 340, 'Infórmate en @uchile', None) + '<div style="font-size:0;line-height:0;">' + iconos + '</div>' + img('f3.png', 340, '', None)
+derecha = img(f1, 340, 'Infórmate en @uchile', None) + '<div style="font-size:0;line-height:0;">' + iconos + '</div>' + img(f3, 340, '', None)
 out.append('<div style="font-size:0;line-height:0;background:' + AZUL + ';">'
-           + celda(660, img('f0.png', 660, 'Prensa UChile. Material producido por la Dirección de Comunicaciones junto a comunicadoras y comunicadores de vicerrectorías y direcciones de Rectoría.', None), 'pie')
+           + celda(660, img(f0, 660, 'Prensa UChile. Material producido por la Dirección de Comunicaciones junto a comunicadoras y comunicadores de vicerrectorías y direcciones de Rectoría.', None), 'pie')
            + celda(340, derecha, 'pie') + '</div>')
 
 lk = 'font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#3f4247;text-decoration:underline;'
