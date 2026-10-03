@@ -39,6 +39,12 @@ def guardar(box, nombre):
 # Las filas de noticias llevan un marco gris de 2 px a cada lado; se dibuja con border
 MARCO = 2
 
+# Fondo blanco explícito para que los clientes en modo oscuro no oscurezcan márgenes y huecos.
+# El degradado evita que Gmail lo invierta.
+BG = 'background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);'
+# Las líneas de texto llevan fondo sin degradado: si Gmail invierte el texto, invierte también su fondo y sigue legible.
+TXT = 'background-color:#ffffff;'
+
 def ancho_contenido(x0, x1, y0, y1):
     x0, x1 = max(x0, MARCO + 1), min(x1, W - MARCO - 1)
     caja = ImageChops.difference(im.crop((x0, y0, x1, y1)), Image.new('RGB', (x1-x0, y1-y0), 'white')).point(lambda v: 255 if v > 12 else 0).getbbox()
@@ -68,7 +74,7 @@ for i, (y0, y1, recortar, cols) in enumerate(filas):
         x = b
     partes.append(hueco(W - (MARCO if recortar else 0) - x, total))
     marco = f'border-left:{MARCO}px solid #dddddc;border-right:{MARCO}px solid #dddddc;' if recortar else ''
-    out.append(f'<div style="font-size:0;line-height:0;{marco}">' + ''.join(partes) + '</div>')
+    out.append(f'<div style="font-size:0;line-height:0;{marco}{BG}">' + ''.join(partes) + '</div>')
 
 # Pie: firma a la izquierda, redes a la derecha con un enlace por icono
 guardar((0, 2451, 660, 2563), 'f0.png')
@@ -89,22 +95,26 @@ out.append('<div style="font-size:0;line-height:0;background:#0b3f8c;">'
 lk = 'font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#3f4247;text-decoration:underline;'
 html = f'''<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">
 <title>Diario Mural Universitario - La Uchile en septiembre</title>
 <style>
+:root{{color-scheme:light only;supported-color-schemes:light only;}}
 @media only screen and (max-width:620px){{
   .gap{{display:none!important;}}
   .col{{display:block!important;width:100%!important;padding:0 16px!important;box-sizing:border-box!important;}}
   .pie{{display:block!important;width:100%!important;}}
 }}
 </style></head>
-<body style="margin:0;padding:0;background:#ffffff;">
-<div style="max-width:1000px;margin:0 auto;">
+<body bgcolor="#ffffff" style="margin:0;padding:0;{BG}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="{BG}"><tr><td bgcolor="#ffffff" style="{BG}">
+<div style="max-width:1000px;margin:0 auto;{BG}">
 <!--[if mso]><table role="presentation" width="1000" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
-<p style="margin:16px 0 0;text-align:center;padding:0 16px;"><a href="https://uchile.cl/diario-mural" target="_blank" style="{lk}">Si no ves correctamente este correo, míralo en tu navegador. Haz clic aquí</a></p>
-<p style="margin:12px 0 16px;text-align:center;padding:0 16px;"><a href="https://drive.google.com/file/d/18-0Km1_qAljpQOGSmAsTQOSsOoC3woE4/view?usp=sharing" target="_blank" style="{lk}">Escucha aquí el Diario Mural Universitario</a></p>
+<p style="{TXT}margin:0;padding-top:16px;text-align:center;padding-left:16px;padding-right:16px;"><a href="https://uchile.cl/diario-mural" target="_blank" style="{lk}">Si no ves correctamente este correo, míralo en tu navegador. Haz clic aquí</a></p>
+<p style="{TXT}margin:0;padding-top:12px;padding-bottom:16px;text-align:center;padding-left:16px;padding-right:16px;"><a href="https://drive.google.com/file/d/18-0Km1_qAljpQOGSmAsTQOSsOoC3woE4/view?usp=sharing" target="_blank" style="{lk}">Escucha aquí el Diario Mural Universitario</a></p>
 {chr(10).join(out)}
-<p style="margin:16px 0;padding:0 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#3f4247;">¿Quieres dejar de recibir nuestros correos? Puedes darte de baja <a href="[UNSUBSCRIBEURL]" style="color:#3f4247;">aquí</a></p>
+<p style="{TXT}margin:0;padding-top:16px;padding-bottom:16px;padding-left:16px;padding-right:16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#3f4247;">¿Quieres dejar de recibir nuestros correos? Puedes darte de baja <a href="[UNSUBSCRIBEURL]" style="color:#3f4247;">aquí</a></p>
 <!--[if mso]></td></tr></table><![endif]-->
-</div></body></html>'''
+</div>
+</td></tr></table></body></html>'''
 (carpeta / 'index.html').write_text(html, encoding='utf-8')
 print('ok', len(html))
