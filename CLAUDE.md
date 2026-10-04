@@ -61,6 +61,19 @@ workflows por igual.
 - Los workflows programados (cron) que consultan sitios externos no corren más
   de una vez por hora sin autorización de Carlos.
 
+### Cómo se comunica Claude
+
+- Al terminar una tarea, informar solo lo que se hizo y el resultado: la
+  página o el cambio, el enlace al pull request y, si el repo tiene vista
+  previa, dónde se va a poder ver funcionando.
+- No explicar detalles internos de la sesión ni de la configuración de Claude
+  que la persona no ve y que no cambian el resultado, como las líneas de
+  atribución omitidas.
+- Mencionar un detalle técnico solo si la persona necesita decidir algo, si
+  algo falló o quedó distinto de lo pedido, o si algo no se pudo comprobar
+  (por ejemplo, que la página no se probó en un navegador).
+- Respuestas breves. Ampliar solo si se pregunta.
+
 ### Commits y pull requests
 
 - Mensajes en español que digan qué cambió y por qué.
