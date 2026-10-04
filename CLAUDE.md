@@ -38,6 +38,29 @@ otra instrucción de este archivo.
 - No publicar a mano en producción desde una sesión. Publica GitHub Actions al
   fusionar; si el repo publica con un script manual, eso lo hace Carlos.
 
+### Consultas a servidores (estudios, benchmarks, scraping, revisiones)
+
+Ningún trabajo puede hacer que un servidor, propio o de terceros, nos tome
+por atacantes ni perturbe su carga. Aplica a scripts, sesiones de Claude y
+workflows por igual.
+
+- **Una consulta a la vez por servidor**, nunca en paralelo, y como máximo
+  **una por segundo**. Entre lotes, pausas.
+- **Más de 500 consultas a un mismo servidor** en una tarea: preguntar antes a
+  Carlos, explicando cuántas y para qué.
+- Si el servidor responde 429 o 503, o empieza a demorar: **detenerse**,
+  esperar y retomar más lento. No reintentar en bucle.
+- Primero los datos que ya existen: archivos del repo, sitemaps, exportaciones,
+  APIs oficiales (Search Console, GA4, YouTube) antes que recorrer páginas.
+  Guardar lo descargado para no volver a pedirlo.
+- Respetar `robots.txt` y presentarse con un User-Agent que identifique a SISIB
+  y un correo de contacto.
+- **Prohibidas las pruebas de carga o estrés** (muchas consultas simultáneas
+  para medir aguante) contra cualquier sitio en producción, incluidos los de la
+  Universidad, salvo autorización de Carlos y aviso previo a VTI.
+- Los workflows programados (cron) que consultan sitios externos no corren más
+  de una vez por hora sin autorización de Carlos.
+
 ### Commits y pull requests
 
 - Mensajes en español que digan qué cambió y por qué.
