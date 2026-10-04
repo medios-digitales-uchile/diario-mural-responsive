@@ -17,7 +17,7 @@ from itertools import product
 from pathlib import Path
 
 carpeta = Path(sys.argv[1] if len(sys.argv) > 1 else '2026-09')
-REMOTO = 'https://raw.githubusercontent.com/sisibuchile/diario-mural-responsive/main/' + carpeta.as_posix() + '/'
+REMOTO = 'https://raw.githubusercontent.com/medios-digitales-uchile/diario-mural-responsive/main/' + carpeta.as_posix() + '/'
 for viejo in carpeta.glob('*.png'):
     if viejo.name != 'original.png':
         viejo.unlink()
