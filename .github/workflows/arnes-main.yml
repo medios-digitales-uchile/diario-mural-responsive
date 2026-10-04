@@ -1,0 +1,48 @@
+name: Arnés - cambios directos a main
+
+# Si alguien empuja a main sin pasar por un pull request, deja un issue para
+# que quede registrado. Los exentos de .github/RESPONSABLES no generan aviso.
+# Arnés: https://github.com/medios-digitales-uchile/arnes
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  vigilar:
+    name: Cambio directo a main
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - name: Revisar si los commits vienen de un pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUSHER: ${{ github.event.pusher.name }}
+          REPO: ${{ github.repository }}
+          COMMITS: ${{ join(github.event.commits.*.id, ' ') }}
+          COMPARAR: ${{ github.event.compare }}
+        run: |
+          EXENTOS=$(grep -E '^exentos:' .github/RESPONSABLES 2>/dev/null | sed 's/^exentos://')
+          for e in $EXENTOS; do [ "$e" = "$PUSHER" ] && { echo "$PUSHER está exento"; exit 0; }; done
+          case "$PUSHER" in *"[bot]") echo "robot"; exit 0;; esac
+          SUELTOS=""
+          for c in $COMMITS; do
+            n=$(gh api "repos/$REPO/commits/$c/pulls" -q 'length')
+            [ "$n" = "0" ] && SUELTOS="$SUELTOS $c"
+          done
+          [ -z "$SUELTOS" ] && { echo "Todos los commits vienen de un pull request"; exit 0; }
+          gh issue create -R "$REPO" --title "Cambio directo a main sin pull request ($PUSHER)" --body "@$PUSHER empujó a \`main\` commits que no pasaron por un pull request:
+
+          $(for c in $SUELTOS; do echo "- $c"; done)
+
+          Comparación: $COMPARAR
+
+          La regla del repo es trabajar siempre en una rama y fusionar por pull request. Revisar si el cambio estaba bien y cerrar este issue."
+          echo "::warning::Commits directos a main sin pull request: $SUELTOS"

@@ -1,0 +1,12 @@
+# Responsables de carpetas (arnés de Medios Digitales).
+#
+# Formato: una ruta y uno o más usuarios de GitHub.
+#   img/        chuchurex
+#   jubilados/  usuario1 usuario2
+# Si una carpeta no figura aquí, su responsable es quien la creó.
+# "*" es el responsable por defecto: archivos de la raíz y carpetas sin creador conocido.
+# "contenedores:" son carpetas cuyas subcarpetas cuentan cada una por separado (ej. public/).
+# "exentos:" son quienes no necesitan aprobación ni generan aviso al empujar a main.
+
+*  chuchurex
+exentos: chuchurex sisibuchile

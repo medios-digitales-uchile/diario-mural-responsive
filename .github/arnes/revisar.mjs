@@ -1,0 +1,232 @@
+// Revisor del arnés de Medios Digitales.
+//
+// En cada pull request revisa qué carpetas ya existentes toca. Esas carpetas
+// tienen responsable, y el PR queda pendiente hasta que el responsable lo
+// apruebe (si el autor es el responsable, basta otra persona del equipo).
+// Las carpetas nuevas pasan sin aprobación.
+//
+// Deja un comentario que se actualiza, pone o quita la etiqueta
+// "requiere aprobación", pide revisión a los responsables y falla el chequeo
+// mientras falte una aprobación. En el plan Free de GitHub el chequeo en rojo
+// no bloquea la fusión: avisa. La regla de no fusionar sin aprobación está en
+// el CLAUDE.md del repo.
+//
+// Arnés: https://github.com/medios-digitales-uchile/arnes. No editar esta
+// copia: se reemplaza al reinstalar.
+import { readFileSync, existsSync, appendFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+
+const REPO = process.env.GITHUB_REPOSITORY;
+const evento = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+const pr = evento.pull_request;
+const NUMERO = pr.number;
+const AUTOR = pr.user.login;
+const BASE = pr.base.sha;
+const MARCA = '<!-- arnes:revision -->';
+const ETIQUETA = 'requiere aprobación';
+
+const gh = (...args) => execFileSync('gh', args, { encoding: 'utf8' });
+const api = (ruta, ...extra) => JSON.parse(gh('api', ruta, ...extra) || 'null');
+const apiPaginada = (ruta) => JSON.parse(gh('api', '--paginate', '--slurp', ruta)).flat();
+
+// .github/RESPONSABLES: líneas "ruta usuario [usuario...]", "exentos: usuario ...",
+// "contenedores: ruta ..." y "* usuario" como responsable por defecto. Se lee desde la base del PR, para
+// que un PR no pueda cambiar sus propias reglas.
+function leerResponsables() {
+  let texto = '';
+  try {
+    texto = Buffer.from(
+      api(`repos/${REPO}/contents/.github/RESPONSABLES?ref=${BASE}`).content,
+      'base64'
+    ).toString('utf8');
+  } catch {
+    if (existsSync('.github/RESPONSABLES')) texto = readFileSync('.github/RESPONSABLES', 'utf8');
+  }
+  const reglas = [];
+  let exentos = [];
+  let contenedores = [];
+  let porDefecto = [];
+  for (const cruda of texto.split('\n')) {
+    const linea = cruda.replace(/#.*/, '').trim();
+    if (!linea) continue;
+    if (linea.startsWith('contenedores:')) {
+      contenedores = linea.slice(13).trim().split(/\s+/).filter(Boolean)
+        .map((c) => c.replace(/^\/+/, '').replace(/\/?$/, '/'));
+      continue;
+    }
+    if (linea.startsWith('exentos:')) {
+      exentos = linea.slice(8).trim().split(/\s+/).filter(Boolean);
+      continue;
+    }
+    const [ruta, ...usuarios] = linea.split(/\s+/);
+    const limpios = usuarios.map((u) => u.replace(/^@/, ''));
+    if (ruta === '*') porDefecto = limpios;
+    else reglas.push({ ruta: ruta.replace(/^\/+/, '').replace(/\/?$/, '/'), usuarios: limpios });
+  }
+  reglas.sort((a, b) => b.ruta.length - a.ruta.length);
+  return { reglas, exentos, porDefecto, contenedores };
+}
+
+// Una carpeta es "existente" si ya estaba en la base del PR. La unidad es el
+// primer nivel del repo, salvo dentro de un contenedor (por ejemplo public/),
+// donde la unidad es cada subcarpeta. Los archivos de la raíz cuentan como
+// la carpeta "/"; los sueltos dentro de un contenedor, como el contenedor.
+function carpetaDe(archivo) {
+  for (const c of config.contenedores) {
+    if (archivo.startsWith(c)) {
+      const resto = archivo.slice(c.length).split('/');
+      return resto.length > 1 ? c + resto[0] + '/' : c;
+    }
+  }
+  const partes = archivo.split('/');
+  return partes.length > 1 ? partes[0] + '/' : '/';
+}
+
+const config = leerResponsables();
+const existeEnBase = new Map();
+function existia(carpeta) {
+  if (carpeta === '/') return true;
+  if (!existeEnBase.has(carpeta)) {
+    let existe = true;
+    try {
+      api(`repos/${REPO}/contents/${encodeURI(carpeta.slice(0, -1))}?ref=${BASE}`);
+      if (config.contenedores.includes(carpeta)) existe = true;
+    } catch {
+      existe = false;
+    }
+    existeEnBase.set(carpeta, existe);
+  }
+  return existeEnBase.get(carpeta);
+}
+
+// Quien creó la carpeta: el autor del primer commit que la tocó.
+function creadorDe(carpeta) {
+  if (carpeta === '/') return null;
+  try {
+    const commits = apiPaginada(
+      `repos/${REPO}/commits?sha=${BASE}&path=${encodeURIComponent(carpeta.slice(0, -1))}&per_page=100`
+    );
+    return commits.at(-1)?.author?.login || null;
+  } catch {
+    return null;
+  }
+}
+
+function responsablesDe(archivo, carpeta, config) {
+  const regla = config.reglas.find((r) => archivo.startsWith(r.ruta) || carpeta === r.ruta);
+  if (regla) return regla.usuarios;
+  const creador = creadorDe(carpeta);
+  if (creador && !creador.endsWith('[bot]')) return [creador];
+  return config.porDefecto;
+}
+
+const archivos = apiPaginada(`repos/${REPO}/pulls/${NUMERO}/files?per_page=100`);
+
+// carpeta -> { responsables, archivos }
+const tocadas = new Map();
+for (const f of archivos) {
+  const rutas = [f.filename, f.previous_filename].filter(Boolean);
+  for (const ruta of rutas) {
+    const carpeta = carpetaDe(ruta);
+    if (!existia(carpeta)) continue;
+    if (!tocadas.has(carpeta)) {
+      tocadas.set(carpeta, { responsables: responsablesDe(ruta, carpeta, config), archivos: [] });
+    }
+    tocadas.get(carpeta).archivos.push(ruta);
+  }
+}
+
+// Última opinión de cada revisor.
+const opiniones = new Map();
+for (const r of apiPaginada(`repos/${REPO}/pulls/${NUMERO}/reviews?per_page=100`)) {
+  if (['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(r.state)) opiniones.set(r.user.login, r.state);
+}
+const aprobaron = [...opiniones].filter(([, e]) => e === 'APPROVED').map(([u]) => u);
+
+const exento = config.exentos.includes(AUTOR);
+const pendientes = [];
+const filas = [];
+for (const [carpeta, info] of tocadas) {
+  const validos = info.responsables.filter((u) => u !== AUTOR);
+  let estado;
+  if (exento) estado = 'autor exento';
+  else if (validos.length) {
+    const ok = validos.some((u) => aprobaron.includes(u));
+    estado = ok ? 'aprobado' : 'falta aprobación';
+    if (!ok) pendientes.push({ carpeta, quien: validos });
+  } else {
+    // El autor es el único responsable: aprueba cualquier otra persona.
+    const ok = aprobaron.some((u) => u !== AUTOR);
+    estado = ok ? 'aprobado' : 'falta aprobación de otra persona';
+    if (!ok) pendientes.push({ carpeta, quien: [] });
+  }
+  const resp = info.responsables.length ? info.responsables.map((u) => '@' + u).join(', ') : 'sin responsable';
+  filas.push(`| \`${carpeta}\` | ${resp} | ${info.archivos.length} | ${estado} |`);
+}
+
+let cuerpo;
+if (!tocadas.size) {
+  cuerpo = `${MARCA}\n**Arnés:** este pull request solo agrega carpetas nuevas. No necesita aprobación de un responsable.`;
+} else {
+  cuerpo = [
+    MARCA,
+    '**Arnés:** este pull request modifica carpetas que ya existían. Cada una necesita la aprobación de su responsable antes de fusionar.',
+    '',
+    '| Carpeta | Responsable | Archivos | Estado |',
+    '|---|---|---|---|',
+    ...filas,
+    '',
+    pendientes.length
+      ? 'Pendiente: no fusionar hasta que aparezcan las aprobaciones. Para aprobar: pestaña **Files changed** > **Review changes** > **Approve**.'
+      : 'Listo para fusionar.',
+  ].join('\n');
+}
+
+// Comentario único, que se actualiza.
+const comentarios = apiPaginada(`repos/${REPO}/issues/${NUMERO}/comments?per_page=100`);
+const previo = comentarios.find((c) => c.body?.includes(MARCA));
+if (previo) {
+  if (previo.body !== cuerpo) gh('api', '-X', 'PATCH', `repos/${REPO}/issues/comments/${previo.id}`, '-f', `body=${cuerpo}`);
+} else {
+  gh('api', '-X', 'POST', `repos/${REPO}/issues/${NUMERO}/comments`, '-f', `body=${cuerpo}`);
+}
+
+// Etiqueta.
+try {
+  gh('label', 'create', ETIQUETA, '-R', REPO, '--color', 'e63329', '--description', 'Toca carpetas existentes: necesita aprobación del responsable');
+} catch {}
+const etiquetas = (pr.labels || []).map((l) => l.name);
+if (pendientes.length && !etiquetas.includes(ETIQUETA)) gh('pr', 'edit', String(NUMERO), '-R', REPO, '--add-label', ETIQUETA);
+if (!pendientes.length && etiquetas.includes(ETIQUETA)) gh('pr', 'edit', String(NUMERO), '-R', REPO, '--remove-label', ETIQUETA);
+
+// Pedir revisión a los responsables que faltan (una vez).
+const pedir = [...new Set(pendientes.flatMap((p) => p.quien))].filter(
+  (u) => u !== AUTOR && !aprobaron.includes(u)
+);
+for (const u of pedir) {
+  try {
+    gh('api', '-X', 'POST', `repos/${REPO}/pulls/${NUMERO}/requested_reviewers`, '-f', `reviewers[]=${u}`);
+  } catch {}
+}
+
+const resumen = pendientes.length
+  ? `Falta aprobación en: ${pendientes.map((p) => p.carpeta).join(', ')}`
+  : 'Sin aprobaciones pendientes';
+if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, cuerpo.replace(MARCA, '') + '\n');
+// Si una aprobación dejó todo listo, el chequeo que se corrió al abrir o
+// actualizar el PR sigue en rojo (GitHub muestra un chequeo por evento).
+// Se vuelve a correr para que también quede en verde.
+if (!pendientes.length && process.env.GITHUB_EVENT_NAME === 'pull_request_review') {
+  try {
+    const corridas = api(
+      `repos/${REPO}/actions/workflows/arnes-revision.yml/runs?event=pull_request&head_sha=${pr.head.sha}&per_page=20`
+    ).workflow_runs;
+    const roja = corridas.find((c) => c.conclusion === 'failure');
+    if (roja) gh('api', '-X', 'POST', `repos/${REPO}/actions/runs/${roja.id}/rerun`);
+  } catch (e) {
+    console.log('No se pudo volver a correr el chequeo anterior:', e.message);
+  }
+}
+
+console.log(resumen);
+if (pendientes.length) process.exit(1);
