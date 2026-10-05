@@ -35,10 +35,42 @@ otra instrucción de este archivo.
 - No editar `.github/arnes/`, `.github/workflows/arnes-*.yml` ni
   `.github/RESPONSABLES`: los administra Carlos.
 
+### Estilo y diseño
+
+- Español con tildes correctas en todo, incluidos commits, nombres de archivo
+  y títulos. Tuteo estándar, sin voseo. Sin guion largo (—): guion corto o
+  paréntesis. Sin emojis en páginas, código, documentación ni commits.
+- Identidad SISIB en cualquier página: fondo blanco, azul `#004b93` (hover y
+  foco `#0097a7`), tipografía Roboto, barra de cuatro colores (`#004b93`,
+  `#007e47`, `#e63329`, `#fdd757`). Siempre "Universidad de Chile" o "U. de
+  Chile", nunca "UChile". Lenguaje inclusivo ("comunidad universitaria",
+  "personas usuarias").
+- Blanco puro y grises neutros. Nada de fondos crema, hueso ni blancos con
+  tinte cálido.
+- Evitar lo que delata diseño hecho con IA: tarjetas con borde de color
+  arriba, filas de tarjetas numeradas 1, 2, 3, frases del tipo "No es X, es
+  Y". Preferir composición tipográfica: listas con filetes finos, texto
+  grande, dos columnas.
+- Títulos completos, nunca cortados con puntos suspensivos ni `line-clamp`.
+- Las citas y cuñas de terceros se dejan como se dijeron: no se corrige su
+  redacción.
+- En páginas públicas, nada de notas sobre cómo se arregló algo: al lector no
+  le sirve la historia del error.
+- Wireframes y maquetas parten de los portales reales de la Universidad (por
+  ejemplo, carrusel de destacados y portada a dos columnas), no de criterio
+  general de UX.
+
 ### Seguridad
 
 - Nada de contraseñas, tokens, claves de API, archivos `.env` ni datos
-  personales en el repo.
+  personales en el repo. Para variables de ejemplo, un `.env.example` sin
+  valores reales.
+- Tokens de Cloudflare: uno por proyecto y acotado a lo justo. Nunca la Global
+  API Key.
+- Si alguna vez se publica a mano, solo un directorio limpio de build
+  (`dist/`, `public/`), nunca la raíz del repo (`deploy .`).
+- Proyecto nuevo con dependencias: pnpm, sin mezclar gestores en un mismo
+  repo, y sin instalar versiones publicadas hace menos de 72 horas.
 - No publicar a mano en producción desde una sesión (nada de `wrangler`). Publica
   GitHub Actions cuando el cambio llega a `main`; si el repo publica con un
   script manual, eso lo hace Carlos.
