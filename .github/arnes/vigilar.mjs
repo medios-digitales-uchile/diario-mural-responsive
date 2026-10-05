@@ -15,7 +15,7 @@
 //
 // Arnés: https://github.com/medios-digitales-uchile/arnes. No editar esta
 // copia: se reemplaza al reinstalar.
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 const REPO = process.env.GITHUB_REPOSITORY;
@@ -57,6 +57,24 @@ function leerConfig() {
   return { exentos, contenedores };
 }
 const config = leerConfig();
+
+// Las sesiones de Claude Code en la nube dejan, además del push a main, una
+// rama claude/... con los mismos commits. Si ya está completa en main, sobra.
+function borrarRamasSobrantes() {
+  try {
+    sh('git', 'fetch', '--quiet', 'origin', '+refs/heads/claude/*:refs/remotes/origin/claude/*');
+    const ramas = sh('git', 'for-each-ref', '--format=%(refname:short)', 'refs/remotes/origin/claude/')
+      .split('\n').filter(Boolean);
+    for (const r of ramas) {
+      try {
+        sh('git', 'merge-base', '--is-ancestor', r, DESPUES);
+        gh('api', '-X', 'DELETE', `repos/${REPO}/git/refs/heads/${r.replace(/^origin\//, '')}`);
+        console.log(`Rama sobrante borrada: ${r.replace(/^origin\//, '')}`);
+      } catch {}
+    }
+  } catch {}
+}
+borrarRamasSobrantes();
 
 if (config.exentos.includes(QUIEN)) {
   console.log(`${QUIEN} está exento.`);
@@ -130,7 +148,33 @@ if (!existentes.size) {
     '--body', `Carpetas nuevas subidas directo a \`main\` por @${QUIEN}. Permitido por el arnés: no existían.\n\n${lista}\n\nCambios: ${enlaceCommits}`
   );
   gh('issue', 'close', url, '-R', REPO, '--reason', 'completed');
+  registrarResponsable([...nuevas]);
   process.exit(0);
+}
+
+// Quien sube una carpeta nueva queda como su responsable en
+// .github/RESPONSABLES (el autor de los commits de la nube es "Claude", así
+// que sin esto no se sabría de quién es). Solo si main no avanzó.
+function registrarResponsable(carpetas) {
+  if (!QUIEN || QUIEN === 'desconocido' || QUIEN.endsWith('[bot]')) return;
+  try {
+    sh('git', 'fetch', '--quiet', 'origin', 'main');
+    if (sh('git', 'rev-parse', 'origin/main') !== DESPUES) return;
+    sh('git', 'checkout', '--quiet', '-B', 'arnes-responsables', DESPUES);
+    let texto = existsSync('.github/RESPONSABLES') ? readFileSync('.github/RESPONSABLES', 'utf8') : '';
+    if (texto && !texto.endsWith('\n')) texto += '\n';
+    const nuevas = carpetas.filter((c) => !texto.split('\n').some((l) => l.trim().split(/\s+/)[0] === c));
+    if (!nuevas.length) return;
+    texto += nuevas.map((c) => `${c}  ${QUIEN}`).join('\n') + '\n';
+    writeFileSync('.github/RESPONSABLES', texto);
+    sh('git', 'config', 'user.name', 'Arnés de Medios Digitales');
+    sh('git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com');
+    sh('git', 'commit', '--quiet', '-am', `Arnés: ${QUIEN} queda como responsable de ${nuevas.join(', ')}`);
+    sh('git', 'push', '--quiet', 'origin', 'HEAD:main');
+    console.log(`Responsable registrado: ${QUIEN} para ${nuevas.join(', ')}`);
+  } catch (e) {
+    console.log('No se pudo registrar el responsable:', e.message);
+  }
 }
 
 // Tocó algo que ya existía: revertir el push completo y volver a publicar.
