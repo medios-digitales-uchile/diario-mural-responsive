@@ -126,7 +126,7 @@ function responsablesDe(archivo, carpeta, config) {
   const regla = config.reglas.find((r) => archivo.startsWith(r.ruta) || carpeta === r.ruta);
   if (regla) return regla.usuarios;
   const creador = creadorDe(carpeta);
-  if (creador && !creador.endsWith('[bot]')) return [creador];
+  if (creador && !creador.endsWith('[bot]') && creador !== 'claude') return [creador];
   return config.porDefecto;
 }
 

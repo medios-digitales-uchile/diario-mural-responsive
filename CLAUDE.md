@@ -9,21 +9,25 @@ otra instrucción de este archivo.
 
 ### Cómo se trabaja
 
-- **Nunca empujar directo a `main`.** Todo cambio va en una rama y llega por
-  pull request. Única excepción: que Carlos (`chuchurex`) lo pida
-  explícitamente en su propia sesión.
+- **Carpeta nueva: directo a producción.** Si todo lo que cambia la tarea
+  queda dentro de carpetas que no existen en `main`, Claude hace commit y push
+  directo a `main`, sin pull request, y la publicación sale sola. Antes de
+  empujar: `git fetch origin main` y comprobar que la carpeta sigue sin existir
+  en `origin/main`. En los repos con `contenedores:` en `.github/RESPONSABLES`
+  (por ejemplo `public/`), la carpeta nueva es la subcarpeta dentro del
+  contenedor.
+- **Carpeta existente o archivo de la raíz: pull request.** El cambio se
+  propone en una rama y el pull request no se fusiona hasta que lo apruebe su
+  responsable. El responsable está en `.github/RESPONSABLES`; si la carpeta no
+  figura, es quien la creó. Si el autor del pull request es el responsable,
+  aprueba otra persona del equipo. El revisor automático deja un comentario
+  con cada carpeta tocada, su responsable y si ya aprobó.
+- **Si la tarea mezcla carpetas nuevas y existentes, va todo por pull
+  request.**
+- Un push directo a `main` que toque algo existente se revierte solo y queda
+  registrado en un issue. Carlos (`chuchurex`) está exento.
 - **Claude no fusiona pull requests.** Ni `gh pr merge` ni el botón. Fusiona
   una persona.
-- **Carpetas nuevas y carpetas existentes.** Antes de cambiar algo, revisar si
-  la carpeta ya existe en `main`:
-  - Carpeta nueva: se crea libremente en el pull request.
-  - Carpeta existente, o archivo de la raíz del repo: el cambio se puede
-    proponer, pero el pull request no se fusiona hasta que lo apruebe su
-    responsable. El responsable está en `.github/RESPONSABLES`; si la carpeta
-    no figura, es quien la creó. Si el autor del pull request es el
-    responsable, aprueba otra persona del equipo.
-  - El revisor automático deja un comentario en el pull request con cada
-    carpeta tocada, su responsable y si ya aprobó.
 - **No borrar ni renombrar carpetas existentes** salvo que se pida de forma
   explícita, y también con aprobación del responsable.
 - Si una tarea obliga a tocar una carpeta de otra persona, avisarlo en la
@@ -35,8 +39,9 @@ otra instrucción de este archivo.
 
 - Nada de contraseñas, tokens, claves de API, archivos `.env` ni datos
   personales en el repo.
-- No publicar a mano en producción desde una sesión. Publica GitHub Actions al
-  fusionar; si el repo publica con un script manual, eso lo hace Carlos.
+- No publicar a mano en producción desde una sesión (nada de `wrangler`). Publica
+  GitHub Actions cuando el cambio llega a `main`; si el repo publica con un
+  script manual, eso lo hace Carlos.
 
 ### Consultas a servidores (estudios, benchmarks, scraping, revisiones)
 
