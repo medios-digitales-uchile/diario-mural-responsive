@@ -25,7 +25,7 @@ otra instrucción de este archivo.
 - **Si la tarea mezcla carpetas nuevas y existentes, va todo por pull
   request.**
 - Un push directo a `main` que toque algo existente se revierte solo y queda
-  registrado en un issue. Carlos (`chuchurex`) está exento.
+  registrado en un issue. La jefatura (`chuchurex`) está exenta.
 - **Claude no fusiona pull requests.** Ni `gh pr merge` ni el botón. Fusiona
   una persona.
 - **No borrar ni renombrar carpetas existentes** salvo que se pida de forma
@@ -33,7 +33,7 @@ otra instrucción de este archivo.
 - Si una tarea obliga a tocar una carpeta de otra persona, avisarlo en la
   sesión antes de hacerlo y explicarlo en la descripción del pull request.
 - No editar `.github/arnes/`, `.github/workflows/arnes-*.yml` ni
-  `.github/RESPONSABLES`: los administra Carlos.
+  `.github/RESPONSABLES`: los administra la jefatura.
 
 ### Estilo y diseño
 
@@ -73,7 +73,7 @@ otra instrucción de este archivo.
   repo, y sin instalar versiones publicadas hace menos de 72 horas.
 - No publicar a mano en producción desde una sesión (nada de `wrangler`). Publica
   GitHub Actions cuando el cambio llega a `main`; si el repo publica con un
-  script manual, eso lo hace Carlos.
+  script manual, eso lo hace la jefatura.
 
 ### Consultas a servidores (estudios, benchmarks, scraping, revisiones)
 
@@ -83,8 +83,8 @@ workflows por igual.
 
 - **Una consulta a la vez por servidor**, nunca en paralelo, y como máximo
   **una por segundo**. Entre lotes, pausas.
-- **Más de 500 consultas a un mismo servidor** en una tarea: preguntar antes a
-  Carlos, explicando cuántas y para qué.
+- **Más de 500 consultas a un mismo servidor** en una tarea: pedir antes autorización a
+  la jefatura de la unidad, explicando cuántas y para qué.
 - Si el servidor responde 429 o 503, o empieza a demorar: **detenerse**,
   esperar y retomar más lento. No reintentar en bucle.
 - Primero los datos que ya existen: archivos del repo, sitemaps, exportaciones,
@@ -94,9 +94,9 @@ workflows por igual.
   y un correo de contacto.
 - **Prohibidas las pruebas de carga o estrés** (muchas consultas simultáneas
   para medir aguante) contra cualquier sitio en producción, incluidos los de la
-  Universidad, salvo autorización de Carlos y aviso previo a VTI.
+  Universidad, salvo autorización de la jefatura y aviso previo a VTI.
 - Los workflows programados (cron) que consultan sitios externos no corren más
-  de una vez por hora sin autorización de Carlos.
+  de una vez por hora sin autorización de la jefatura.
 
 ### Cómo se comunica Claude
 
