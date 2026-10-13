@@ -1,0 +1,141 @@
+{
+ "titulo": "Diario Mural Universitario - La Uchile en octubre",
+ "urlNavegador": "https://uchile.cl/diario-mural",
+ "urlAudio": "https://open.spotify.com/show/1SoQGrUA5Q3yJuehc7tamA",
+ "baseImagenes": "https://raw.githubusercontent.com/medios-digitales-uchile/diario-mural-responsive/main/2026-10/",
+ "marco": 3,
+ "pie": 2558,
+ "filas": [
+  {
+   "y0": 0,
+   "y1": 146,
+   "modo": "sangre",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": null,
+     "alt": "Diario Mural Universitario. Boletín informativo N° 42, octubre 2026"
+    }
+   ]
+  },
+  {
+   "y0": 146,
+   "y1": 492,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://uchile.cl/u244772",
+     "alt": "CEV: CEv presenta monitoreo de políticas universitarias"
+    },
+    {
+     "x0": 479,
+     "enlace": "https://uchile.cl/u185065",
+     "alt": "Dpto. Pregrado: Súmate al equipo de Monitoras y Monitores de la U"
+    }
+   ]
+  },
+  {
+   "y0": 492,
+   "y1": 794,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://www.universitaria.cl",
+     "alt": "Editorial Universitaria: Descuentos para la comunidad universitaria en Librería Universitaria"
+    },
+    {
+     "x0": 479,
+     "enlace": "https://uchile.cl/u245182",
+     "alt": "CSAI: Articular las vicerrectorías con la autoevaluación es clave para la calidad institucional"
+    }
+   ]
+  },
+  {
+   "y0": 794,
+   "y1": 1240,
+   "modo": "sangre",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://eol.uchile.cl/courses/course-v1:eol+VAEC-PA+2026_2/about",
+     "alt": "Curso online de Primeros Auxilios Psicológicos. Reserva tu cupo aquí"
+    },
+    {
+     "x0": 556,
+     "enlace": "https://eol.uchile.cl/courses/course-v1:eol+VAEC-PA+2026_2/about",
+     "alt": "Curso de Primeros Auxilios Psicológicos en la plataforma EOL"
+    }
+   ]
+  },
+  {
+   "y0": 1240,
+   "y1": 1614,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://fcei.uchile.cl/agenda/245446/paren-las-prensas-jornadas-periodisticas-2026",
+     "alt": "FCEI: ¡Paren las Prensas 2026!"
+    },
+    {
+     "x0": 619,
+     "enlace": "https://www.linkedin.com/feed/update/urn:li:activity:7511133281824866304",
+     "alt": "Dpto. Pregrado: Trabajo conjunto y situado por la docencia inclusiva"
+    }
+   ]
+  },
+  {
+   "y0": 1614,
+   "y1": 1951,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "mailto:diariomural@uchile.cl",
+     "alt": "¿Tienes una iniciativa, hito o proyecto que te gustaría compartir con la comunidad UCHILE? Escríbenos a diariomural@uchile.cl"
+    },
+    {
+     "x0": 411,
+     "enlace": "https://ctci-genero.cl/",
+     "alt": "VID: Abierta la convocatoria al III Congreso CTCI con Perspectiva de Género"
+    }
+   ]
+  },
+  {
+   "y0": 1951,
+   "y1": 2272,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://uchile.cl/genero",
+     "alt": "DIGEN: ¿Conoces los avances en igualdad de género de nuestra universidad?"
+    },
+    {
+     "x0": 530,
+     "enlace": "https://uchile.cl/u242751",
+     "alt": "SISIB: SISIB rediseña el sitio web del Programa de Reducción de Riesgos y Desastres (CITRID)"
+    }
+   ]
+  },
+  {
+   "y0": 2272,
+   "y1": 2558,
+   "modo": "recorte",
+   "columnas": [
+    {
+     "x0": 0,
+     "enlace": "https://vti.uchile.cl/ayudatecnologica/wp-content/uploads/2020/11/Manual-Creacion-de-Ticket-Externos-Solicitantes.pdf",
+     "alt": "VTI: Nuevo canal para la gestión de subdominios Uchile"
+    },
+    {
+     "x0": 732,
+     "enlace": "https://vti.uchile.cl/ayudatecnologica/wp-content/uploads/2020/11/Manual-Creacion-de-Ticket-Externos-Solicitantes.pdf",
+     "alt": "VTI: Nuevo canal para la gestión de subdominios Uchile"
+    }
+   ]
+  }
+ ]
+}
